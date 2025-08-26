@@ -4,9 +4,12 @@ Tampilan sebelum ditambahkan update
 
 Tampilan setelah ditambahkan update
 
-<img width="1919" height="1079" alt="Screenshot 2025-08-26 192618" src="https://github.com/user-attachments/assets/f8f08d0e-ce89-4eb3-b0df-169d2d763f1c" />
+<img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/1076b095-20d1-44d3-bb67-b2044430fecc" />
 
 Tampilan saat ingin update 
 
-<img width="1919" height="1079" alt="Screenshot 2025-08-26 192633" src="https://github.com/user-attachments/assets/5acbd4b0-f36f-4ee5-a1dd-61ce04eecde8" />
+<img width="959" height="538" alt="image" src="https://github.com/user-attachments/assets/8673cbe8-d2b6-4260-bf3d-434910aad863" />
 
+Tampilan setelah update (matcha, menjadi matcha latte)
+
+<img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/240abea2-ee06-435f-b9ff-a4a7182286e8" />
