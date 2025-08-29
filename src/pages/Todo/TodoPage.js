@@ -1,35 +1,45 @@
 // src/pages/TodoPage.js
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import TodoForm from "../../components/TodoForm.js";
 import TodoList from "../../components/TodoList.js";
+import SearchInput from "../../components/SearchInput.js";
 
 const TodoPage = () => {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchTodos = () => {
-    fetch("/api/todos")
+  const fetchTodos = useCallback((searchQuery) => {
+    setLoading(true);
+    const url = searchQuery
+      ? `/api/todos?search=${encodeURIComponent(searchQuery)}`
+      : "/api/todos";
+
+    fetch(url)
       .then((response) => {
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
-        }
         return response.json();
       })
       .then((data) => {
         setTodos(data.todos);
-        setLoading(false);
+        setError(null);
       })
       .catch((err) => {
         setError(err.message);
-        setLoading(false);
-      });
-  };
+        setTodos([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    fetchTodos();
-  }, []);
+    const timerId = setTimeout(() => {
+      fetchTodos(searchTerm);
+    }, 500);
+    return () => clearTimeout(timerId);
+  }, [searchTerm, fetchTodos]);
 
   const handleAddTodo = (task) => {
     fetch("/api/todos", {
@@ -77,14 +87,13 @@ const TodoPage = () => {
       .catch((err) => console.error("Error updating todo:", err));
   };
 
-  // BARU: Fungsi untuk menangani pembaruan teks tugas
   const handleUpdateTodo = (id, newTask) => {
     fetch(`/api/todos/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ task: newTask }), // Kirim teks tugas yang baru
+      body: JSON.stringify({ task: newTask }),
     })
       .then(() => {
         setTodos(
@@ -118,12 +127,13 @@ const TodoPage = () => {
       <header style={{ textAlign: "center" }}>
         <h1>Aplikasi Todo List</h1>
         <TodoForm onAddTodo={handleAddTodo} />
+        <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <h2>Daftar Tugas Anda</h2>
         <TodoList
           todos={todos}
           onToggleCompleted={handleToggleCompleted}
           onDeleteTodo={handleDeleteTodo}
-          onUpdateTodo={handleUpdateTodo} // BARU: Teruskan fungsi update sebagai props
+          onUpdateTodo={handleUpdateTodo}
         />
       </header>
     </div>

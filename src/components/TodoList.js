@@ -3,7 +3,6 @@
 import React from "react";
 import TodoItem from "./TodoItem";
 
-// DIUBAH: Terima props onUpdateTodo
 const TodoList = ({ todos, onToggleCompleted, onDeleteTodo, onUpdateTodo }) => {
   if (todos.length === 0) {
     return <p>Tidak ada tugas yang ditemukan. Silakan tambahkan satu.</p>;
@@ -17,7 +16,7 @@ const TodoList = ({ todos, onToggleCompleted, onDeleteTodo, onUpdateTodo }) => {
           todo={todo}
           onToggleCompleted={onToggleCompleted}
           onDeleteTodo={onDeleteTodo}
-          onUpdateTodo={onUpdateTodo} // DIUBAH: Teruskan props ke TodoItem
+          onUpdateTodo={onUpdateTodo}
         />
       ))}
     </ul>
