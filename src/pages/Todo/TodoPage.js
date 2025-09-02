@@ -1,30 +1,29 @@
-// src/pages/TodoPage.js
-
 import React, { useState, useEffect, useCallback } from "react";
-import TodoForm from "../../components/TodoForm.js";
-import TodoList from "../../components/TodoList.js";
-import SearchInput from "../../components/SearchInput.js";
+import DataTable from 'react-data-table-component';
+import { PageContainer, Header, Button, StyledInput, StyledModal, Overlay, ButtonWrapper, SmallButton } from '../../components/StyledComponents';
+
+StyledModal.setAppElement('#root');
 
 const TodoPage = () => {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [currentTodo, setCurrentTodo] = useState(null);
+  const [taskText, setTaskText] = useState('');
+  
+  // LANGKAH 2.A: Tambahkan state untuk search term
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchTodos = useCallback((searchQuery) => {
+  const fetchTodos = useCallback(() => {
     setLoading(true);
-    const url = searchQuery
-      ? `/api/todos?search=${encodeURIComponent(searchQuery)}`
-      : "/api/todos";
-
-    fetch(url)
+    fetch("/api/todos")
       .then((response) => {
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         return response.json();
       })
       .then((data) => {
-        setTodos(data.todos);
+        setTodos(data.todos); 
         setError(null);
       })
       .catch((err) => {
@@ -35,108 +34,122 @@ const TodoPage = () => {
   }, []);
 
   useEffect(() => {
-    const timerId = setTimeout(() => {
-      fetchTodos(searchTerm);
-    }, 500);
-    return () => clearTimeout(timerId);
-  }, [searchTerm, fetchTodos]);
+    fetchTodos();
+  }, [fetchTodos]);
 
-  const handleAddTodo = (task) => {
-    fetch("/api/todos", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ task }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setTodos([
-          ...todos,
-          { id: data.id, task: data.task, completed: false },
-        ]);
-      })
-      .catch((err) => console.error("Error adding todo:", err));
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    if (!taskText.trim()) return;
+
+    const method = currentTodo ? "PUT" : "POST";
+    const url = currentTodo ? `/api/todos/${currentTodo.id}` : "/api/todos";
+    
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: taskText }),
+      });
+      if (!response.ok) throw new Error("Gagal menyimpan data.");
+      
+      fetchTodos();
+      closeModal();
+    } catch (err) {
+      console.error("Error submitting form:", err);
+    }
   };
 
-  const handleDeleteTodo = (id) => {
-    fetch(`/api/todos/${id}`, {
-      method: "DELETE",
-    })
-      .then(() => {
-        setTodos(todos.filter((todo) => todo.id !== id));
-      })
-      .catch((err) => console.error("Error deleting todo:", err));
+  const handleDeleteTodo = async (id) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus tugas ini?")) {
+      try {
+        await fetch(`/api/todos/${id}`, { method: "DELETE" });
+        fetchTodos();
+      } catch (err) {
+        console.error("Error deleting todo:", err);
+      }
+    }
   };
 
-  const handleToggleCompleted = (id, completed) => {
-    fetch(`/api/todos/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ completed: !completed }),
-    })
-      .then(() => {
-        setTodos(
-          todos.map((todo) =>
-            todo.id === id ? { ...todo, completed: !completed } : todo
-          )
-        );
-      })
-      .catch((err) => console.error("Error updating todo:", err));
+  const openModalForAdd = () => {
+    setCurrentTodo(null);
+    setTaskText('');
+    setModalIsOpen(true);
   };
 
-  const handleUpdateTodo = (id, newTask) => {
-    fetch(`/api/todos/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ task: newTask }),
-    })
-      .then(() => {
-        setTodos(
-          todos.map((todo) =>
-            todo.id === id ? { ...todo, task: newTask } : todo
-          )
-        );
-      })
-      .catch((err) => console.error("Error updating task:", err));
+  const openModalForEdit = (todo) => {
+    setCurrentTodo(todo);
+    setTaskText(todo.task);
+    setModalIsOpen(true);
   };
 
-  if (loading) {
-    return <div style={{ textAlign: "center" }}>Loading...</div>;
-  }
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
+
+  const columns = [
+    { name: 'Tugas', selector: row => row.task, sortable: true, style: { fontSize: '1rem' } },
+    {
+      name: 'Aksi',
+      cell: row => (
+        <ButtonWrapper>
+          <SmallButton className="info" onClick={() => openModalForEdit(row)}>Update</SmallButton>
+          <SmallButton className="danger" onClick={() => handleDeleteTodo(row.id)}>Hapus</SmallButton>
+        </ButtonWrapper>
+      ),
+      width: '180px',
+    },
+  ];
+
+  // LANGKAH 2.B: Tambahkan logika untuk memfilter data sebelum di-render
+  const filteredTodos = todos.filter(todo =>
+    todo.task.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (error) {
-    return (
-      <div style={{ textAlign: "center", color: "red" }}>Error: {error}</div>
-    );
+    return <PageContainer>Error: {error}</PageContainer>;
   }
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        maxWidth: "800px",
-        margin: "0 auto",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <header style={{ textAlign: "center" }}>
+    <PageContainer>
+      <Header>
         <h1>Aplikasi Todo List</h1>
-        <TodoForm onAddTodo={handleAddTodo} />
-        <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        <h2>Daftar Tugas Anda</h2>
-        <TodoList
-          todos={todos}
-          onToggleCompleted={handleToggleCompleted}
-          onDeleteTodo={handleDeleteTodo}
-          onUpdateTodo={handleUpdateTodo}
-        />
-      </header>
-    </div>
+        <Button className="primary" onClick={openModalForAdd}>Tambah Tugas Baru</Button>
+      </Header>
+
+      {/* LANGKAH 2.C: Tambahkan input untuk search */}
+      <StyledInput
+        type="text"
+        placeholder="Cari tugas..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ marginBottom: '20px' }}
+      />
+
+      <DataTable
+        columns={columns}
+        // LANGKAH 2.D: Gunakan data yang sudah difilter
+        data={filteredTodos}
+        progressPending={loading}
+        pagination
+        highlightOnHover
+        striped
+      />
+      
+      <StyledModal isOpen={modalIsOpen} onRequestClose={closeModal} style={Overlay}>
+        <h2>{currentTodo ? 'Update Tugas' : 'Tambah Tugas Baru'}</h2>
+        <form onSubmit={handleFormSubmit}>
+          <StyledInput
+            type="text"
+            value={taskText}
+            onChange={(e) => setTaskText(e.target.value)}
+            placeholder="Tuliskan tugasmu..."
+            autoFocus
+          />
+          <Button className="success" type="submit">Simpan</Button>
+          <Button type="button" onClick={closeModal} style={{ marginLeft: '10px' }}>Batal</Button>
+        </form>
+      </StyledModal>
+    </PageContainer>
   );
 };
 
