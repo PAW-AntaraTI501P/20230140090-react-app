@@ -133,6 +133,7 @@ const TodoPage = () => {
         pagination
         highlightOnHover
         striped
+        noDataComponent="Tidak ada tugas yang ditemukan. Silahkan tambahkan satu"
       />
       
       <StyledModal isOpen={modalIsOpen} onRequestClose={closeModal} style={Overlay}>
