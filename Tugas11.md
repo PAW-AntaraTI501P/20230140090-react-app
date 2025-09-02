@@ -4,4 +4,4 @@ Data yang tidak ditemukan
 
 Data yang tersedia
 
-<img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/e7bd40b7-9148-4f51-82b9-8e3d235a98eb" />
+<img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/a620aa54-433b-4afe-a418-a5486a493936" />
