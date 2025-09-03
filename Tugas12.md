@@ -3,6 +3,9 @@ Postman API Register
 <img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/295603ee-4ecb-4460-922d-b52d1230c844" />
 
 Postman API Login
+
+<img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/8b27bf63-7ff0-4e29-9424-5c70202e550a" />
+
 Halaman Login di browser
 
 <img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/920dd4ca-3214-4731-8d32-75690c556694" />
