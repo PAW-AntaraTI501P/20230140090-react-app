@@ -10,4 +10,6 @@ Halaman Register di browser
 
 Halaman Home
 
+<img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/eb16ccab-bf3c-453a-bff7-2a57b86c68bf" />
+
 <img width="959" height="539" alt="image" src="https://github.com/user-attachments/assets/9df76ae3-76e7-4fa2-87d3-25b95700e0c2" />
