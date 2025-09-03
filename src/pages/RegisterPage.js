@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import './LoginPage.css';
+// PERBAIKAN: Path yang benar dari 'src/pages/RegisterPage.js'
+// adalah './Login/LoginPage.css'
+import './Login/LoginPage.css'; 
 
-const LoginPage = () => {
+const RegisterPage = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -14,34 +17,39 @@ const LoginPage = () => {
     setErrorMsg('');
 
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/login', {
+      await axios.post('http://localhost:3001/api/auth/register', {
+        name,
         email,
         password,
       });
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/');
+      alert('Registrasi berhasil! Silakan login.');
+      navigate('/login');
     } catch (error) {
-      // PENANGANAN ERROR YANG LEBIH AMAN
       if (error.response) {
-        // Jika server memberikan respons error (misal: password salah)
-        setErrorMsg(error.response.data.msg || 'Login gagal. Terjadi kesalahan.');
+        setErrorMsg(error.response.data.msg || 'Registrasi gagal. Terjadi kesalahan.');
       } else if (error.request) {
-        // Jika permintaan dikirim tapi tidak ada respons (backend mati)
         setErrorMsg('Tidak bisa terhubung ke server. Pastikan server berjalan.');
       } else {
-        // Error lainnya
         setErrorMsg('Terjadi kesalahan yang tidak diketahui.');
       }
-      console.error('Login error:', error);
+      console.error('Registration error:', error);
     }
   };
 
   return (
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
-        <h2>Login</h2>
+        <h2>Register</h2>
         {errorMsg && <p className="error-message">{errorMsg}</p>}
+        <div className="form-group">
+          <label>Name:</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
         <div className="form-group">
           <label>Email:</label>
           <input
@@ -60,14 +68,14 @@ const LoginPage = () => {
             required
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">Register</button>
         <p className="auth-link">
-          Belum punya akun? <Link to="/register">Daftar di sini</Link>
+          Sudah punya akun? <Link to="/login">Login di sini</Link>
         </p>
       </form>
     </div>
   );
 };
 
-export default LoginPage;
+export default RegisterPage;
 
