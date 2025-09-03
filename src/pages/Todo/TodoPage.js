@@ -11,19 +11,26 @@ const TodoPage = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [currentTodo, setCurrentTodo] = useState(null);
   const [taskText, setTaskText] = useState('');
-  
-  // LANGKAH 2.A: Tambahkan state untuk search term
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchTodos = useCallback(() => {
     setLoading(true);
-    fetch("/api/todos")
+    
+    // --- PERBAIKAN OTENTIKASI 1 ---
+    const token = localStorage.getItem('token');
+    
+    fetch("/api/todos", {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then((response) => {
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+            if(response.status === 401) window.location.href = '/login';
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response.json();
       })
       .then((data) => {
-        setTodos(data.todos); 
+        setTodos(data.todos || data); 
         setError(null);
       })
       .catch((err) => {
@@ -44,10 +51,16 @@ const TodoPage = () => {
     const method = currentTodo ? "PUT" : "POST";
     const url = currentTodo ? `/api/todos/${currentTodo.id}` : "/api/todos";
     
+    // --- PERBAIKAN OTENTIKASI 2 ---
+    const token = localStorage.getItem('token');
+    
     try {
       const response = await fetch(url, {
         method: method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
+        },
         body: JSON.stringify({ task: taskText }),
       });
       if (!response.ok) throw new Error("Gagal menyimpan data.");
@@ -61,8 +74,15 @@ const TodoPage = () => {
 
   const handleDeleteTodo = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus tugas ini?")) {
+      
+      // --- PERBAIKAN OTENTIKASI 3 ---
+      const token = localStorage.getItem('token');
+
       try {
-        await fetch(`/api/todos/${id}`, { method: "DELETE" });
+        await fetch(`/api/todos/${id}`, { 
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
         fetchTodos();
       } catch (err) {
         console.error("Error deleting todo:", err);
@@ -100,9 +120,8 @@ const TodoPage = () => {
     },
   ];
 
-  // LANGKAH 2.B: Tambahkan logika untuk memfilter data sebelum di-render
   const filteredTodos = todos.filter(todo =>
-    todo.task.toLowerCase().includes(searchTerm.toLowerCase())
+    (todo.task || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (error) {
@@ -116,7 +135,6 @@ const TodoPage = () => {
         <Button className="primary" onClick={openModalForAdd}>Tambah Tugas Baru</Button>
       </Header>
 
-      {/* LANGKAH 2.C: Tambahkan input untuk search */}
       <StyledInput
         type="text"
         placeholder="Cari tugas..."
@@ -127,7 +145,6 @@ const TodoPage = () => {
 
       <DataTable
         columns={columns}
-        // LANGKAH 2.D: Gunakan data yang sudah difilter
         data={filteredTodos}
         progressPending={loading}
         pagination
